@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role{
+  CLIENT
+  RESTAURANT
+  ADMIN
+}
+
+enum OrderStatus{
+  PENDING
+  PREPARING
+  DELIVERED
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  password     String
+  phone String?
+  address String?
+  role         Role      @default(CLIENT)
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantId Int? @unique
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Restaurant {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String
+  cnpj      String   @unique
+  user      User?
+  products  Product[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String
+  description String?
+  price Float
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Order{
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  items OrderItem[]
+  total Float
+  status OrderStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem{
+  id Int @id @default(autoincrement())
+  order Order @relation(fields: [orderId], references: [id])
+  orderId Int
+  product Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity Int
+  price Float
+}

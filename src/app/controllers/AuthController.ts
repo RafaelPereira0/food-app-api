@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { RegisterDTO } from "../dtos/auth.dto";
+import { LoginDTO, RegisterDTO } from "../dtos/auth.dto";
 import AuthService from "../services/AuthService";
 
 class AuthController{
@@ -14,6 +14,19 @@ class AuthController{
             })
         }catch(err: any){
             return res.status(400).json({
+                message: err.message
+            })
+        }
+    }
+
+    async login(req: Request, res: Response){
+        try{
+            const data: LoginDTO = req.body;
+            const result = await AuthService.login(data)
+
+            return res.status(200).json(result)
+        }catch(err: any){
+            return res.status(401).json({
                 message: err.message
             })
         }

@@ -6,11 +6,10 @@ import UserController from "../controllers/UserController";
 
 const userRoute = Router();
 
-userRoute.put('/me',
-    AuthMiddleware,
-    RoleMiddleware([Role.CLIENT]),
-    
-    UserController.update
-)
+userRoute.use(AuthMiddleware);
+userRoute.use(RoleMiddleware([Role.CLIENT]));
+
+userRoute.put('/me',UserController.update);
+userRoute.delete('/me', UserController.delete);
 
 export default userRoute;

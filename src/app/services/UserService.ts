@@ -6,7 +6,7 @@ class UserService{
         const {name, email, phone, address} = data;
         
         if(!userId){
-            throw new Error("ID não informado");
+            throw new Error("Usuário não está logado");
         }
         if(email){
             const emailExist = await prisma.user.findUnique({
@@ -29,6 +29,26 @@ class UserService{
         })
 
         return user;
+    }
+
+    async delete(userId: number){
+        if(!userId){
+            throw new Error("Usuário não está logado");
+        }
+
+        const existUser = await prisma.user.findUnique({
+            where: {id: userId}
+        });
+
+        if(!existUser){
+            throw new Error("Usuário não encontrado");
+        }
+
+        const deletedUser = await prisma.user.delete({
+            where: {id: userId}
+        })
+
+        return deletedUser;
     }
 }
 

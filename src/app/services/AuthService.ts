@@ -33,80 +33,78 @@ class AuthService {
                 throw new Error("Telefone e endereço são obrigatórios para restaurantes")
             }
 
-
-            const restaurant = await prisma.restaurant.create({
-                    data: {
-                        name,
-                        cnpj,
-                        phone: phone,
-                        address: address
-                    }
-                })
-            
             const user = await prisma.user.create({
                 data: {
                     name,
                     email: normalizedEmail,
                     password: hashedPassword,
                     role,
-                    phone: phone, 
-                    address: address,
-                    restaurantId: restaurant.id
+                    phone: phone,
+                    address: address
                 }
             })
 
-            return {user, restaurant}
+
+            const restaurant = await prisma.restaurant.create({
+                data: {
+                    name,
+                    cnpj,
+                    phone: phone,
+                    address: address,
+                    userId: user.id
+                }
+            })
+
+            return { user, restaurant }
         }
         const user = await prisma.user.create({
             data: {
                 name,
                 email: normalizedEmail,
                 password: hashedPassword,
-                role,
-                phone: phone,  
-                address: address 
+                phone: phone,
+                address: address
             }
         })
 
         return user
     }
 
-    async login(data: LoginDTO){
-        const {email, password} = data
+    async login(data: LoginDTO) {
+        const { email, password } = data
         const normalizedEmail = email.toLocaleLowerCase();
 
         const user = await prisma.user.findUnique({
-            where: {email: normalizedEmail},
-            include: {restaurant:true}
+            where: { email: normalizedEmail },
+            include: { restaurant: true }
         })
 
-        if(!user){
+        if (!user) {
             throw new Error("Email não cadastrado")
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
-        if(!passwordMatch){
+        if (!passwordMatch) {
             throw new Error("Email ou senha inválidos");
         }
 
-        const token = jwt.sign({
-            id: user.id,
-            role: user.role
-        },
-        process.env.JWT_SECRET as string,
-        {
-            subject: String(user.id),
-            expiresIn: '1d'
-        }
-        )
+        const token = jwt.sign(
+            {
+                role: user.role
+            },
+            process.env.JWT_SECRET as string,
+            {
+                subject: String(user.id),
+                expiresIn: '1d'
+            }
+        );
 
         return {
             token,
-            user:{
+            user: {
                 name: user.name,
                 email: user.email,
-                role: user.role,
-                restaurantId: user.restaurantId
+                role: user.role
             }
         }
     }

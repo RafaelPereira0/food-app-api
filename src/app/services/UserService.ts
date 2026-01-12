@@ -1,8 +1,10 @@
 import { UpdateUserDTO } from "../dtos/user.dto";
 import prisma from "../prisma/client";
+import { UserType } from "../types/userType";
 
 class UserService{
-    async update(userId: number, data: UpdateUserDTO){
+
+    async update(userId: number, data: UpdateUserDTO): Promise<UserType>{
         const {name, email, phone, address} = data;
         
         if(!userId){
@@ -25,6 +27,10 @@ class UserService{
                 ...(data.email && { email: email }),
                 ...(data.phone !== undefined && { phone: phone }),
                 ...(data.address !== undefined && { address: address }),
+            },
+            select:{
+                name: true,
+                email: true
             }
         })
 

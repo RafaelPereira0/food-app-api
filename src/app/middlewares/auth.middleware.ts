@@ -12,10 +12,11 @@ export function AuthMiddleware(
   res: Response,
   next: NextFunction
 ) {
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ message: "Não autorizado" });
+    return res.status(403).json({ message: "Não autorizado" });
   }
 
 
@@ -31,6 +32,7 @@ export function AuthMiddleware(
       id: Number(decoded.sub),
       role: decoded.role
     };
+
 
     return next();
   } catch {

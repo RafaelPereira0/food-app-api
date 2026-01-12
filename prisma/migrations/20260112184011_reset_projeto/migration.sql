@@ -13,7 +13,6 @@ CREATE TABLE "User" (
     "phone" TEXT,
     "address" TEXT,
     "role" "Role" NOT NULL DEFAULT 'CLIENT',
-    "restaurantId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -27,6 +26,8 @@ CREATE TABLE "Restaurant" (
     "address" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "cnpj" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -74,13 +75,13 @@ CREATE TABLE "OrderItem" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_restaurantId_key" ON "User"("restaurantId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Restaurant_cnpj_key" ON "Restaurant"("cnpj");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Restaurant_userId_key" ON "Restaurant"("userId");
+
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

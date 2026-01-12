@@ -24,12 +24,14 @@ model User {
   name         String
   email        String    @unique
   password     String
-  phone String?
-  address String?
+  phone        String?
+  address      String?
   role         Role      @default(CLIENT)
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
-  restaurantId Int? @unique
+
+  restaurant   Restaurant?
+
   orders       Order[]
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -40,9 +42,13 @@ model Restaurant {
   address   String
   phone     String
   cnpj      String   @unique
-  user      User?
+  active    Boolean @default(true)
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
+
   products  Product[]
   orders    Order[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

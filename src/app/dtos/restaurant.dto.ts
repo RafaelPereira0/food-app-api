@@ -4,3 +4,6 @@ export interface restaurantDTO {
     phone: string,
     address: string
 }
+
+
+export type UpdateRestaurantDTO = Partial<restaurantDTO>;

@@ -1,7 +1,7 @@
-import { restaurantDTO } from "../dtos/restaurant.dto";
+import { restaurantDTO, UpdateRestaurantDTO } from "../dtos/restaurant.dto";
 import prisma from "../prisma/client";
 import { RestaurantTypes } from "../types/restaurantTypes";
-
+import { Role } from "../types/role";
 
 class RestaurantService{
     async create(userId: number, data: restaurantDTO){
@@ -9,8 +9,25 @@ class RestaurantService{
             where: {userId}
         })
 
-        if(alreadyHasRestaurant){
+        if(alreadyHasRestaurant && alreadyHasRestaurant.active === true){
             throw new Error("Usuário já possui um restaurante");
+        }
+
+        if(alreadyHasRestaurant && alreadyHasRestaurant.active === false){
+            const activeRestaurante = await prisma.restaurant.update({
+                where: {userId: userId},
+                data: {
+                    active: true
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    address: true,
+                    phone: true
+                }
+            })
+
+            return activeRestaurante;
         }
 
         const restaurant = await prisma.restaurant.create({
@@ -24,6 +41,13 @@ class RestaurantService{
                 phone: true
             }
         });
+
+        const userToRestaurant = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                role: Role.RESTAURANT
+            }
+        })
 
         return restaurant;
     }
@@ -54,7 +78,8 @@ class RestaurantService{
                 name: true,
                 cnpj: true,
                 phone: true,
-                address: true
+                address: true,
+                active: true
             }
         })
 
@@ -65,7 +90,7 @@ class RestaurantService{
         return restaurant;
     }
 
-    async delete(restaurantId: number){
+    async delete(restaurantId: number, userId: number){
         const restaurant = await prisma.restaurant.findUnique({
             where: {id: restaurantId}
         })
@@ -79,10 +104,17 @@ class RestaurantService{
             data: {active: false}
         })
 
+        const restaurantToUser = await prisma.user.update({
+            where: {id: userId},
+            data: {
+                role: Role.CLIENT
+            }
+        })
+
         return deleted;
     }
 
-    async uptdate(userId : number, data: restaurantDTO): Promise<RestaurantTypes>{
+    async uptdate(userId : number, data: UpdateRestaurantDTO): Promise<RestaurantTypes>{
         const {name, phone, cnpj, address} = data;
 
         if(cnpj){

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { restaurantDTO } from "../dtos/restaurant.dto";
+import { restaurantDTO, UpdateRestaurantDTO } from "../dtos/restaurant.dto";
 import RestaurantService from "../services/RestaurantService";
 import { RestaurantTypes } from "../types/restaurantTypes";
 
@@ -51,7 +51,7 @@ class RestaurantController {
                 return res.status(404).json({ message: "Você não possui um restaurante cadastrado" })
             }
 
-            const deleted = await RestaurantService.delete(restaurant.id);
+            const deleted = await RestaurantService.delete(restaurant.id, userId);
 
             return res.status(200).json(deleted);
         }catch(err: any){
@@ -62,7 +62,7 @@ class RestaurantController {
     async update(req: Request, res: Response){
         try{
             const userId = req.user!.id;
-            const data : restaurantDTO = req.body;
+            const data : UpdateRestaurantDTO = req.body;
 
             const restaurant : RestaurantTypes = await RestaurantService.uptdate(userId, data);
 

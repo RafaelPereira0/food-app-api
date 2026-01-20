@@ -1,4 +1,5 @@
 export interface CreateProductDTO{
+    productCategoryId: any;
     name: string,
     description?: string,
     price: number

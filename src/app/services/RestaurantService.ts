@@ -1,3 +1,4 @@
+import { RestaurantNotFound } from "../../errors/RestaurantNotFound";
 import { restaurantDTO, UpdateRestaurantDTO } from "../dtos/restaurant.dto";
 import prisma from "../prisma/client";
 import { RestaurantTypes } from "../types/restaurantTypes";
@@ -38,7 +39,8 @@ class RestaurantService{
                 id: true,
                 name: true,
                 address: true,
-                phone: true
+                phone: true,
+                restaurantCategory: true
             }
         });
 
@@ -59,7 +61,12 @@ class RestaurantService{
                 id: true,
                 name: true,
                 address: true,
-                phone: true
+                phone: true,
+                restaurantCategory: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
 
@@ -79,12 +86,17 @@ class RestaurantService{
                 cnpj: true,
                 phone: true,
                 address: true,
-                active: true
+                active: true,
+                restaurantCategory: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         })
 
         if(!restaurant){
-            throw new Error("Restaurante não encontrado");
+            throw new RestaurantNotFound();
         }
 
         return restaurant;
@@ -96,7 +108,7 @@ class RestaurantService{
         })
 
         if(!restaurant){
-            throw new Error("Restaurante não encontrado");
+            throw new RestaurantNotFound();
         }
 
         const deleted = await prisma.restaurant.update({
@@ -115,7 +127,7 @@ class RestaurantService{
     }
 
     async uptdate(userId : number, data: UpdateRestaurantDTO): Promise<RestaurantTypes>{
-        const {name, phone, cnpj, address} = data;
+        const {name, phone, cnpj, address, category} = data;
 
         if(cnpj){
             const cnpjExist = await prisma.restaurant.findUnique({
@@ -132,7 +144,8 @@ class RestaurantService{
             data:{
                 ...(data.name && {name: name}),
                 ...(data.phone && {phone: phone}),
-                ...(data.address && {address: address})
+                ...(data.address && {address: address}),
+                ...(data.category && {restaurantCategoryId: category})
             },
 
         })

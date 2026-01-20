@@ -1,3 +1,6 @@
+import { DifferentRestaurantError } from "../../errors/DifferentRestaurantError";
+import { OrderNotFoundError } from "../../errors/OrderNotFoundError";
+import { ProductNotFoundError } from "../../errors/ProductNotFoundError";
 import prisma from "../prisma/client";
 import { OrderStatus } from "../types/orderStatus";
 
@@ -10,8 +13,17 @@ class OrderService{
         const dbProducts = await prisma.product.findMany({
             where: {id: {
                 in: productsId
-            }, restaurantId}
+            }}
         });
+
+        const isFromDifferentRestaurant = dbProducts.some(p => p.restaurantId !== restaurantId);
+            if (isFromDifferentRestaurant) {
+                throw new DifferentRestaurantError();
+        }
+
+        if (dbProducts.length !== items.length) {
+            throw new ProductNotFoundError();
+        }
 
         let total = 0;
 
@@ -56,7 +68,7 @@ class OrderService{
         })
 
         if(!order){
-            throw new Error("Pedido não encontrado");
+            throw new OrderNotFoundError();
         }
 
         const updatedOrder = await prisma.order.update({
@@ -92,7 +104,7 @@ class OrderService{
             }, orderBy: {createdAt: "desc"}
         })
 
-        if(!orders) throw new Error("Nenhum pedido encontrado deste usuário");
+        if(!orders) throw new OrderNotFoundError();
 
         return orders;
     }
@@ -120,7 +132,7 @@ class OrderService{
             }, orderBy: {createdAt: "asc"}
         });
 
-        if(!orders) throw new Error("Nenhum pedido encontrado deste restaurante");
+        if(!orders) throw new OrderNotFoundError();
 
         return orders
     }

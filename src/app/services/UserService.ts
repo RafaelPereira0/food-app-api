@@ -1,3 +1,6 @@
+import { EmailAlreadyInUseError } from "../../errors/EmailAlreadyInUseError";
+import { UnauthorizedError } from "../../errors/UnauthorizedError";
+import { UserNotFoundError } from "../../errors/UserNotFoundError";
 import { UpdateUserDTO } from "../dtos/user.dto";
 import prisma from "../prisma/client";
 import { UserType } from "../types/userType";
@@ -8,7 +11,7 @@ class UserService{
         const {name, email, phone, address} = data;
         
         if(!userId){
-            throw new Error("Usuário não está logado");
+            throw new UnauthorizedError();
         }
         if(email){
             const emailExist = await prisma.user.findUnique({
@@ -16,7 +19,7 @@ class UserService{
             });
 
             if(emailExist && emailExist.id !== userId){
-                throw new Error("Email já está em uso");
+                throw new EmailAlreadyInUseError();
             }
         }
 
@@ -39,7 +42,7 @@ class UserService{
 
     async delete(userId: number){
         if(!userId){
-            throw new Error("Usuário não está logado");
+            throw new UnauthorizedError();
         }
 
         const existUser = await prisma.user.findUnique({
@@ -47,7 +50,7 @@ class UserService{
         });
 
         if(!existUser){
-            throw new Error("Usuário não encontrado");
+            throw new UserNotFoundError();
         }
 
         const deletedUser = await prisma.user.delete({

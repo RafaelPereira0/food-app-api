@@ -8,7 +8,7 @@ export interface RegisterDTO{
     address?: string
     role?: Role
     cnpj? : string
-
+    restaurantCategory?: number
 }
 
 export interface LoginDTO{

@@ -1,3 +1,5 @@
+import { ProductNotFoundError } from "../../errors/ProductNotFoundError";
+import { RestaurantNotFound } from "../../errors/RestaurantNotFound";
 import { CreateProductDTO, UpdateProductDTO } from "../dtos/product.dto";
 import prisma from "../prisma/client";
 import { ProductType } from "../types/productType";
@@ -13,14 +15,50 @@ class ProductService{
             throw new Error("Usuário não possui um restaurante cadastrado");
         }
 
+        const category = await prisma.productCategory.findFirst({
+            where: {
+                id: data.productCategoryId,
+                restaurantId: restaurant.id
+            }
+        });
+
+        if (!category) {
+            throw new Error("Categoria não encontrada ou não pertence ao seu restaurante");
+        }
+
         const product = await prisma.product.create({
             data: {
                 ...data,
-                restaurantId: restaurant.id
+                restaurantId: restaurant.id,
+                productCategoryId: data.productCategoryId
             }
         })
 
         return product;
+    }
+
+    async getAll(){
+        const products = await prisma.product.findMany({
+            select: {
+                id:true,
+                name:true,
+                description:true,
+                price:true,
+                restaurant: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                productCategory: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        })
+
+        return products
     }
 
     async getAllFromRestaurant(userId: number): Promise<ProductType[]>{
@@ -29,7 +67,7 @@ class ProductService{
         });
 
         if(!restaurant){
-            throw new Error("Restaurante não encontrado")
+            throw new RestaurantNotFound()
         }
 
         const products = await prisma.product.findMany({
@@ -45,7 +83,7 @@ class ProductService{
         });
 
         if(!restaurant){
-            throw new Error("Restaurante não encontrado")
+            throw new RestaurantNotFound()
         }
 
         const product = await prisma.product.findFirst({
@@ -73,7 +111,7 @@ class ProductService{
         });
 
         if(!restaurant){
-            throw new Error("Restaurante não encontrado")
+            throw new RestaurantNotFound()
         }
 
         const product = await prisma.product.findFirst({
@@ -84,7 +122,7 @@ class ProductService{
         })
 
         if(!product){
-            throw new Error("Produto não encontrado");
+            throw new ProductNotFoundError();
         }
 
         const deleted = await prisma.product.delete({

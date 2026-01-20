@@ -4,10 +4,11 @@ import prisma from "../prisma/client";
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken"
 import { Role } from "../types/role";
+import { EmailAlreadyInUseError } from "../../errors/EmailAlreadyInUseError";
 
 class AuthService {
     async register(data: RegisterDTO) {
-        const { name, email, password, role, cnpj, phone, address } = data;
+        const { name, email, password, role, cnpj, phone, address, restaurantCategory } = data;
         const normalizedEmail = email.toLowerCase();
 
         const existUser = await prisma.user.findUnique({
@@ -15,7 +16,7 @@ class AuthService {
         })
 
         if (existUser) {
-            throw new Error("Email já cadastrado")
+            throw new EmailAlreadyInUseError()
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -31,6 +32,10 @@ class AuthService {
 
             if (!phone || !address) {
                 throw new Error("Telefone e endereço são obrigatórios para restaurantes")
+            }
+
+            if(!restaurantCategory){
+                throw new Error("Indique a categoria do restaurante")
             }
 
             const user = await prisma.user.create({

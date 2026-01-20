@@ -29,7 +29,10 @@ API em Node.js e TypeScript para aplicativo de comida, com gerenciamento de usu�
   - prisma/ → cliente Prisma
   - routes/ → definição das rotas
   - services/ → regras de negócio
+  - middlewares/  → middlewares (auth, ownrestaurant, etc)
+  - errors/ → erros AppError 
   - types/ → tipos e interfaces TypeScript (types, enums, etc.)
+  - schemas/ → validações (Zod)
   - app.ts → ponto de entrada
 
 ## Contato
